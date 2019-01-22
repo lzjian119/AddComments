@@ -26,7 +26,8 @@ def md5_str(str):
 
 class Handler(BaseHandler):
     crawl_config = {
-        'itag': time.time()
+        'itag': time.time(),
+        'proxy': '157.230.91.240:80'
     }
 
     urls = {
@@ -156,9 +157,9 @@ class Handler(BaseHandler):
                 print result['error']
 
             if j['pcursor'] != "no_more":
-                data = self.data % (eid, j['pcursor'])
-                self.crawl('https://live.kuaishou.com/feed/profile', callback=self.detail_page,
-                           save=[block, author, title_flag], headers=self.headers, method="POST", data=data)
+                data = self.data % (eid,j['pcursor'])
+                self.crawl('https://live.kuaishou.com/feed/profile',callback=self.detail_page,save=[block,author,title_flag],headers=self.headers,method="POST",data=data)
+            
 
     @config(priority=2)
     def detail_page(self, response):
@@ -191,23 +192,22 @@ class Handler(BaseHandler):
             eid = each['user']['id']  # each['eid']
             result = check_data.check(res)
 
+
             if result['num'] == 0:
                 try:
                     logger.info('send to mimod: %s', str(result['dict']))
                     ret, code, resp = mimod.send_to_mimod(result['dict'])
                     print ret, code, resp
                     print json.dumps(result['dict'], indent=2)
-                    page_nums = (int(int(cmcnt) / 20) + 1) if cmcnt > 0 else 0
-                    page_nums = min(page_nums, 10)
-                    for page_num in range(1, page_nums + 1):
-                        url = self.comment_url + '#' + each['photoId'] + str(page_num)
-                        data = Handler.get_comment_request_data(each['photoId'], page=page_num)
+                    if int(cmcnt) > 0:
+                        url = self.comment_url + '#' + each['photoId']
+                        data = Handler.get_comment_request_data(each['photoId'])
                         self.crawl(url,
                                    headers=self.comment_headers,
                                    callback=self.comment_page,
                                    method='POST',
                                    data=json.dumps(data),
-                                   save={'link': url, 'block': block})
+                                   save={'link': url, 'block': res['block'], 'photoId': each['photoId'], 'page': 1})
                 except Exception as ee:
                     print ee
                     continue
@@ -215,19 +215,32 @@ class Handler(BaseHandler):
                 print result['error']
 
             if j['pcursor'] != "no_more":
-                data = self.data % (eid, j['pcursor'])
-                self.crawl('https://live.kuaishou.com/feed/profile', callback=self.detail_page,
-                           save=[block, author, title_flag], headers=self.headers, method="POST", data=data)
+                data = self.data % (eid,j['pcursor'])
+                self.crawl('https://live.kuaishou.com/feed/profile',callback=self.detail_page,save=[block,author,title_flag],headers=self.headers,method="POST",data=data)
 
     @config(priority=2)
     def comment_page(self, response):
         response.encoding = 'utf8'
         link = response.save['link']
         block = response.save['block']
-        # print(response.url)
+        photo_id = response.save['photoId']
         j = response.json
-        # print(j)
         get_comment_list = j['data']['getCommentList']
+
+        pcursor = get_comment_list['pcursor']
+        cmcnt = int(get_comment_list['commentCount'])
+        page = response.save['page']
+
+        if pcursor != "no_more" and 200 > (page * 20):
+            url = self.comment_url + '#' + photo_id
+            data = Handler.get_comment_request_data(photo_id, pcursor=pcursor)
+            self.crawl(url,
+                       headers=self.comment_headers,
+                       callback=self.comment_page,
+                       method='POST',
+                       data=json.dumps(data),
+                       save={'link': link, 'block': block, 'photoId': photo_id, 'pcursor': pcursor, 'page': page + 1})
+
         for each in get_comment_list['commentList']:
             comment_dict = {}
             link_sign1, link_sign2 = creat_sign_f64(link)
@@ -267,14 +280,13 @@ class Handler(BaseHandler):
             print('photoId参数类型错误')
             return {}
 
-        page = 1
-        if kwargs.get('page') and isinstance(kwargs.get('page'), six.integer_types):
-            page = kwargs['page']
+        pcursor = ""
+        if kwargs.get('pcursor') and isinstance(kwargs.get('pcursor'), six.string_types):
+            pcursor = kwargs['pcursor']
 
         data = {"operationName": "CommentFeeds",
-                "variables": {"photoId": photo_id, "page": page, "pcursor": photo_id, "count": 20},
+                "variables": {"photoId": photo_id, "page": 1, "pcursor": pcursor, "count": 20},
                 "query": "query CommentFeeds($photoId: String, $page: Int, $pcursor: String, $count: Int) {\n  getCommentList(photoId: $photoId, page: $page, pcursor: $pcursor, count: $count) {\n    commentCount\n    realCommentCount\n    pcursor\n    commentList {\n      ...BaseComment\n      subCommentCount\n      subCommentsPcursor\n      likedCount\n      liked\n      subComments {\n        commentId\n        replyToUserName\n        timestamp\n        content\n        authorName\n        authorId\n        replyTo\n        authorEid\n        headurl\n        replyToEid\n        status\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment BaseComment on BaseComment {\n  commentId\n  authorId\n  authorName\n  content\n  headurl\n  timestamp\n  authorEid\n  status\n  __typename\n}\n"}
 
         return data
-
 
