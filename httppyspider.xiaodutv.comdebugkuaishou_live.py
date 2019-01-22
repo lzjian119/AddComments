@@ -27,7 +27,7 @@ def md5_str(str):
 class Handler(BaseHandler):
     crawl_config = {
         'itag': time.time(),
-        'proxy': '157.230.91.240:80'
+        'proxy': '192.168.80.59:8889'
     }
 
     urls = {
@@ -219,6 +219,7 @@ class Handler(BaseHandler):
     @config(priority=2)
     def comment_page(self, response):
         response.encoding = 'utf8'
+        print(json.dumps(response.save, indent=4))
         link = response.save['link']
         block = response.save['block']
         photo_id = response.save['photoId']
@@ -226,7 +227,6 @@ class Handler(BaseHandler):
         get_comment_list = j['data']['getCommentList']
 
         pcursor = get_comment_list['pcursor']
-        cmcnt = int(get_comment_list['commentCount'])
         page = response.save['page']
 
         if pcursor != "no_more" and 200 > (page * 20):
