@@ -139,17 +139,15 @@ class Handler(BaseHandler):
                     ret, code, resp = mimod.send_to_mimod(result['dict'])
                     print ret, code, resp
                     print json.dumps(result['dict'], indent=2)
-                    page_nums = (int(int(cmcnt) / 20) + 1) if cmcnt > 0 else 0
-                    page_nums = min(page_nums, 10)
-                    for page_num in range(1, page_nums + 1):
-                        url = self.comment_url + '#' + each['photoId'] + str(page_num)
-                        data = Handler.get_comment_request_data(each['photoId'], page=page_num)
+                    if int(cmcnt) > 0:
+                        url = self.comment_url + '#' + each['photoId']
+                        data = Handler.get_comment_request_data(each['photoId'])
                         self.crawl(url,
                                    headers=self.comment_headers,
                                    callback=self.comment_page,
                                    method='POST',
                                    data=json.dumps(data),
-                                   save={'link': url, 'block': block})
+                                   save={'link': url, 'block': res['block'], 'photoId': each['photoId'], 'page': 1})
                 except Exception as ee:
                     print ee
                     continue
