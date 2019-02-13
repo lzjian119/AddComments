@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # Created on 2019-02-13 11:08:18
-# Project: temp
+# Project: wechat_xiangshengxiaopin
 
 
 import random
@@ -50,76 +50,17 @@ class Handler(BaseHandler):
         j_msg_list = response.json['general_msg_list']
         json_msg_list = json.loads(j_msg_list)
         print(json.dumps(json_msg_list, indent=4))
+        save = response.save
         block = response.save['block']
 
         for i in json_msg_list['list']:
             for tv_board in i['app_msg_ext_info']['multi_app_msg_item_list']:
-
-                res = {}
-                res['title'] = tv_board['title']
-                res['horizontal_thumnail_url'] = tv_board['cover'].replace('https', 'http')
-                # res['optimized_img_url'] = tv_board['poster']['imageUrl'].replace('https', 'http')
-                res['duration'] = 0
-                res['description'] = ''
-                res['author'] = tv_board['author'].strip()
-                res['link'] = Handler.link_url.format(tv_board['vid'])
-                res['block'] = block
-                res['play_count'] = 0
-                res['comment_count'] = 0
-                res['pub_time'] = int(time.time())
-                res['site'] = Handler.site
-                print(res['title'])
-                print(res['pub_time'])
-
-                result = check_data.check(res)
-                if 'date' in response.save.keys():
-                    if result['dict']['pub_time'] < response.save['date']:
-                        print(str(result['dict']['pub_time']) + ": too old")
-                        continue
-
-                if result['num'] == 0:
-                    try:
-                        logger.info('send to mimod: %s', str(result['dict']))
-                        ret, code, resp = mimod.send_to_mimod(result['dict'])
-                        print(json.dumps(result['dict'], indent=2))
-                    except Exception as ee:
-                        print(ee)
-                else:
-                    print(result['error'])
-
-            tv_board = i['app_msg_ext_info']
-            res = {}
-            res['title'] = tv_board['title']
-            res['horizontal_thumnail_url'] = tv_board['cover'].replace('https', 'http')
-            # res['optimized_img_url'] = tv_board['poster']['imageUrl'].replace('https', 'http')
-            # res['duration'] = tv_board['duration']
-            res['duration'] = 0
-            res['description'] = ''
-            res['author'] = tv_board['author'].strip()
-            res['link'] = Handler.link_url.format(tv_board['vid'])
-            res['block'] = block
-            res['play_count'] = 0
-            res['comment_count'] = 0
-            res['pub_time'] = int(time.time())
-            res['site'] = Handler.site
-            print(res['title'])
-            print(res['pub_time'])
-
-            result = check_data.check(res)
-            if 'date' in response.save.keys():
-                if result['dict']['pub_time'] < response.save['date']:
-                    print(str(result['dict']['pub_time']) + ": too old")
+                if Handler.save_res(tv_board, save, block) is False:
                     continue
 
-            if result['num'] == 0:
-                try:
-                    logger.info('send to mimod: %s', str(result['dict']))
-                    ret, code, resp = mimod.send_to_mimod(result['dict'])
-                    print(json.dumps(result['dict'], indent=2))
-                except Exception as ee:
-                    print(ee)
-            else:
-                print(result['error'])
+            tv_board = i['app_msg_ext_info']
+            if Handler.save_res(tv_board, save, block) is False:
+                continue
 
         # 还有视频时can_msg_continue等于1
         if response.json['can_msg_continue'] == 1:
@@ -129,6 +70,43 @@ class Handler(BaseHandler):
                        save={
                            'block': block
                        })
+
+    @staticmethod
+    def save_res(json_data, save, block):
+        res = {}
+        res['title'] = json_data['title']
+        res['horizontal_thumnail_url'] = json_data['cover'].replace('https', 'http')
+        # res['optimized_img_url'] = tv_board['poster']['imageUrl'].replace('https', 'http')
+        # res['duration'] = tv_board['duration']
+        res['duration'] = 0
+        res['description'] = ''
+        res['author'] = json_data['author'].strip()
+        res['link'] = Handler.link_url.format(json_data['vid'])
+        res['block'] = block
+        res['play_count'] = 0
+        res['comment_count'] = 0
+        res['pub_time'] = int(time.time())
+        res['site'] = Handler.site
+        print(res['title'])
+        print(res['pub_time'])
+
+        result = check_data.check(res)
+        if 'date' in save.keys():
+            if result['dict']['pub_time'] < save['date']:
+                print(str(result['dict']['pub_time']) + ": too old")
+                return False
+
+        if result['num'] == 0:
+            try:
+                logger.info('send to mimod: %s', str(result['dict']))
+                ret, code, resp = mimod.send_to_mimod(result['dict'])
+                print(json.dumps(result['dict'], indent=2))
+            except Exception as ee:
+                print(ee)
+        else:
+            print(result['error'])
+
+        return True
 
 
 
