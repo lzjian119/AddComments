@@ -45,7 +45,7 @@ class Handler(BaseHandler):
                        'block': block
                    })
 
-    @config(priority=1)
+    @config(age=1)
     def index_page(self, response):
         print(response.text)
         print(json.dumps(response.json, indent=4))
