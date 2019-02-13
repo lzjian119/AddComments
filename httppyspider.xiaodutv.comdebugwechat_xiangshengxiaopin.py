@@ -25,13 +25,13 @@ class Handler(BaseHandler):
     crawl_config = {
         'headers': {
             "User-Agent": "Mozilla/5.0 (Linux; Android 7.0; HUAWEI CAZ-AL10 Build/HUAWEICAZ-AL10; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 XWEB/480 MMWEBSDK/190102 Mobile Safari/537.36 MMWEBID/2601 MicroMessenger/7.0.3.1400(0x27000335) Process/toolsmp NetType/WIFI Language/zh_CN",
-            "Cookie": 'rewardsn=; wxuin=771363897; devicetype=android-24; lang=zh_CN; wxtokenkey=777; version=27000335; pass_ticket=95sdTZRIEMwKLdr79lkuVseSvpq6SqC2ZW2CAT3HLKIAeHRqQwWz6oOBAfHWunUk; wap_sid2=CLmo6O8CElxvR2k4WENHR3NUVE1qXzdxLVViajMtQzAwcWQ0YjdkVmFmeWtxRWpCc3pPMDhKUXk1UDdCT2hsRlBYM0JzR0FhZ1MxS2NfTUJucDZLTnpFakhRYk9DT01EQUFBfjDqzI3jBTgNQJVO',
+            "Cookie": 'rewardsn=; wxuin=771363897; devicetype=android-24; lang=zh_CN; wxtokenkey=777; version=27000335; pass_ticket=95sdTZRIEMwKLdr79lkuVseSvpq6SqC2ZW2CAT3HLKIAeHRqQwWz6oOBAfHWunUk; wap_sid2=CLmo6O8CElxfRHZ4VzNMb0YyT3RWZ2RuWkhZRUpub0Vac09oc21GdVZuU2NLTEZCRFZhQU1CYWtLYl9RZm9VbUZmQkR1d19mdktVNEJFYUNVVTlXOGhuZzVZdkFqdVFEQUFBfjDem4/jBTgNQJVO',
             "Accept-Language": "zh-CN,zh-CN;q=0.9,en-US;q=0.8"
         }
     }
 
     site = 'wechat'
-    url = 'https://mp.weixin.qq.com/mp/profile_ext?action=getvideo&__biz=MzIxNjQ1Mjg1Ng==&f=json&count=10&uin=777&key=777&pass_ticket=95sdTZRIEMwKLdr79lkuVseSvpq6SqC2ZW2CAT3HLKIAeHRqQwWz6oOBAfHWunUk&wxtoken=&appmsg_token=995_baQHrzt1O0uv6uDNOkZzfva4aPC4uI5TZfWE1w~~&x5=0&f=json'
+    url = 'https://mp.weixin.qq.com/mp/profile_ext?action=getvideo&__biz=MzIxNjQ1Mjg1Ng==&f=json&count=10&is_ok=1&scene=&uin=777&key=777&pass_ticket=95sdTZRIEMwKLdr79lkuVseSvpq6SqC2ZW2CAT3HLKIAeHRqQwWz6oOBAfHWunUk&wxtoken=&appmsg_token=996_uB80l36QYQHIvrxJtS9Qz3MC41OqWHdrpo4Rdg~~&x5=0&f=json'
     link_url = 'http://v.qq.com/x/page/{}.html'
     @every(minutes=4 * 60)
     def on_start(self):
