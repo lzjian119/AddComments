@@ -22,6 +22,8 @@ check_data = CheckData()
 import time, json, re, hashlib
 
 class Handler(BaseHandler):
+
+    # wap_sid2和appmsg_token会过期,需要手动修改
     crawl_config = {
         'headers': {
             "User-Agent": "Mozilla/5.0 (Linux; Android 7.0; HUAWEI CAZ-AL10 Build/HUAWEICAZ-AL10; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 XWEB/480 MMWEBSDK/190102 Mobile Safari/537.36 MMWEBID/2601 MicroMessenger/7.0.3.1400(0x27000335) Process/toolsmp NetType/WIFI Language/zh_CN",
@@ -47,6 +49,9 @@ class Handler(BaseHandler):
     def index_page(self, response):
         print(response.text)
         print(json.dumps(response.json, indent=4))
+        if response.json['errmsg'] != 'ok':
+            return
+
         j_msg_list = response.json['general_msg_list']
         json_msg_list = json.loads(j_msg_list)
         print(json.dumps(json_msg_list, indent=4))
